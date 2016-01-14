@@ -1,9 +1,12 @@
 import Foundation
 
+
+/**
+ * The closure captures self and is assigned to self creating a retain loop
+ */
 class willNotDeinit {
   var title = "will not deinit"
   var closure : (Void -> Void)!
-
 
   func doSomething() {
     closure = {
@@ -17,6 +20,9 @@ class willNotDeinit {
   }
 }
 
+/**
+ * The nested function is a closure in disguise, it captures self and is them assigned to self via the anonymous closure, creating a retain loop.
+ */
 class willNotDeinit2 {
   var title = "will not deinit"
   var closure : (Void -> Void)!
@@ -38,6 +44,9 @@ class willNotDeinit2 {
 }
 
 
+/**
+ * A fix to the example above, self is captured as a weak reference and no retain cycle is made.
+ */
 class willDeinit2 {
   var title = "will not deinit"
   var closure : (Void -> Void)!
@@ -46,7 +55,7 @@ class willDeinit2 {
   func doSomething() {
     weak var weakSelf = self
     func doSomethingElse() {
-      print(weakSelf?.title)
+      print(weakSelf!.title)
     }
     closure = {
       doSomethingElse()
@@ -60,6 +69,9 @@ class willDeinit2 {
 }
 
 
+/**
+ * An assigned closure with weak self does not create a retain loop.
+ */
 class willDeinit {
   var title = "will deinit"
   var closure : (Void -> Void)!
@@ -77,6 +89,9 @@ class willDeinit {
   }
 }
 
+/**
+ * Nested function captures self but isn't assigned to self so no retain loop.
+ */
 class nestedFunction {
   var title = "nested function"
 
@@ -95,6 +110,9 @@ class nestedFunction {
   }
 }
 
+/**
+ * Closure captures self but isn't assigned to self so no retain loop.
+ */
 class inlineClosure {
   var title = "inline closure"
 
@@ -132,6 +150,8 @@ example5?.doSomething()
 example5 = nil
 
 
-
+var example6: willDeinit2? = willDeinit2()
+example6?.doSomething()
+example6 = nil
 
 
