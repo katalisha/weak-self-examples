@@ -4,19 +4,20 @@
 
 import Foundation
 
+protocol DoesSomething {
+  func doSomething()
+}
 
 /**
- * The closure captures self and is assigned to self creating a retain loop
+ * Capturing properties of self in a closure without referencing self will not compile
  */
-class willNotDeinit {
-  var title = "will not deinit"
-  var closure : (Void -> Void)!
+class CompilerWarning : DoesSomething {
+  var message = "Will not compile"
 
   func doSomething() {
-    closure = {
-      print(self.title)
+    let _ = {
+      // print(message) // Error message: Instance member 'message' cannot be used on type 'CompilerWarning'
     }
-    closure()
   }
 
   deinit {
@@ -24,17 +25,37 @@ class willNotDeinit {
   }
 }
 
+
+/**
+ * The closure captures self and is assigned to self creating a retain loop
+ */
+class MemoryLeak1 : DoesSomething {
+  var message = "will not deinit"
+  var closure : (Void -> Void)!
+
+  func doSomething() {
+    closure = {
+      print(self.message)
+    }
+    closure()
+  }
+
+  deinit {
+    print("DEALLOCATED") // Not called
+  }
+}
+
 /**
  * The nested function is a closure in disguise, it captures self and is them assigned to self via the anonymous closure, creating a retain loop.
  */
-class willNotDeinit2 {
-  var title = "will not deinit"
+class MemoryLeak2 : DoesSomething {
+  var message = "will not deinit"
   var closure : (Void -> Void)!
 
 
   func doSomething() {
     func doSomethingElse() {
-      print(self.title)
+      print(self.message)
     }
     closure = {
       doSomethingElse()
@@ -43,7 +64,7 @@ class willNotDeinit2 {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("DEALLOCATED") // Not called
   }
 }
 
@@ -51,15 +72,15 @@ class willNotDeinit2 {
 /**
  * A fix to the example above, self is captured as a weak reference and no retain cycle is made.
  */
-class willDeinit2 {
-  var title = "will not deinit"
+class SafeNestedFunctionWeakVar : DoesSomething {
+  var message = "will not deinit"
   var closure : (Void -> Void)!
 
 
   func doSomething() {
     weak var weakSelf = self
     func doSomethingElse() {
-      print(weakSelf!.title)
+      print(weakSelf!.message)
     }
     closure = {
       doSomethingElse()
@@ -76,14 +97,14 @@ class willDeinit2 {
 /**
  * An assigned closure with weak self does not create a retain loop.
  */
-class willDeinit {
-  var title = "will deinit"
+class WeakSelfClosure : DoesSomething {
+  var message = "will deinit"
   var closure : (Void -> Void)!
 
 
   func doSomething() {
     closure = {[weak self] in
-      print(self?.title)
+      print(self?.message)
     }
     closure()
   }
@@ -96,14 +117,14 @@ class willDeinit {
 /**
  * Nested function captures self but isn't assigned to self so no retain loop.
  */
-class nestedFunction {
-  var title = "nested function"
+class NoAssignementNestedFunction : DoesSomething {
+  var message = "nested function"
 
   let mappable = [1]
 
   func doSomething() {
     func closure(number:Int) {
-      print(self.title)
+      print(self.message)
     }
 
     mappable.map(closure)
@@ -117,14 +138,14 @@ class nestedFunction {
 /**
  * Closure captures self but isn't assigned to self so no retain loop.
  */
-class inlineClosure {
-  var title = "inline closure"
+class SafeInlineClosure : DoesSomething {
+  var message = "inline closure"
 
   let mappable = [1]
 
   func doSomething() {
     mappable.map{_ in
-      print(self.title)
+      print(self.message)
     }
   }
 
@@ -133,29 +154,32 @@ class inlineClosure {
   }
 }
 
-var example1 : willNotDeinit? = willNotDeinit()
-example1!.doSomething()
-example1 = nil
+var example : DoesSomething?
 
-var example2 : willDeinit? = willDeinit()
-example2!.doSomething()
-example2 = nil
+example = CompilerWarning()
+example!.doSomething()
+example = nil
 
-var example3 : nestedFunction? = nestedFunction()
-example3!.doSomething()
-example3 = nil
+example = MemoryLeak1()
+example!.doSomething()
+example = nil
 
-var example4: inlineClosure? = inlineClosure()
-example4?.doSomething()
-example4 = nil
+example = MemoryLeak2()
+example!.doSomething()
+example = nil
 
-var example5: willNotDeinit2? = willNotDeinit2()
-example5?.doSomething()
-example5 = nil
+example = SafeNestedFunctionWeakVar()
+example!.doSomething()
+example = nil
 
+example = WeakSelfClosure()
+example!.doSomething()
+example = nil
 
-var example6: willDeinit2? = willDeinit2()
-example6?.doSomething()
-example6 = nil
+example = NoAssignementNestedFunction()
+example!.doSomething()
+example = nil
 
-
+example = SafeInlineClosure()
+example!.doSomething()
+example = nil
