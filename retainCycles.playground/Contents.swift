@@ -12,7 +12,7 @@ protocol DoesSomething {
  * Capturing properties of self in a closure without referencing self will not compile
  */
 class CompilerWarning : DoesSomething {
-  var message = "Will not compile"
+  var message = "CompilerWarning Will not compile"
 
   func doSomething() {
     let _ = {
@@ -21,7 +21,7 @@ class CompilerWarning : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("CompilerWarning DEALLOCATED")
   }
 }
 
@@ -30,7 +30,7 @@ class CompilerWarning : DoesSomething {
  * The closure captures self and is assigned to self creating a retain loop
  */
 class MemoryLeak1 : DoesSomething {
-  var message = "will not deinit"
+  var message = "MemoryLeak1 will not deinit"
   var closure : (Void -> Void)!
 
   func doSomething() {
@@ -41,7 +41,7 @@ class MemoryLeak1 : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED") // Not called
+    print("MemoryLeak1 DEALLOCATED") // Not called
   }
 }
 
@@ -49,7 +49,7 @@ class MemoryLeak1 : DoesSomething {
  * The nested function is a closure in disguise, it captures self and is them assigned to self via the anonymous closure, creating a retain loop.
  */
 class MemoryLeak2 : DoesSomething {
-  var message = "will not deinit"
+  var message = "MemoryLeak2 will not deinit"
   var closure : (Void -> Void)!
 
 
@@ -64,7 +64,7 @@ class MemoryLeak2 : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED") // Not called
+    print("MemoryLeak2 DEALLOCATED") // Not called
   }
 }
 
@@ -73,7 +73,7 @@ class MemoryLeak2 : DoesSomething {
  * A fix to the example above, self is captured as a weak reference and no retain cycle is made.
  */
 class SafeNestedFunctionWeakVar : DoesSomething {
-  var message = "will not deinit"
+  var message = "SafeNestedFunctionWeakVar will not deinit"
   var closure : (Void -> Void)!
 
 
@@ -89,7 +89,7 @@ class SafeNestedFunctionWeakVar : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("SafeNestedFunctionWeakVar DEALLOCATED")
   }
 }
 
@@ -98,7 +98,7 @@ class SafeNestedFunctionWeakVar : DoesSomething {
  * An assigned closure with weak self does not create a retain loop.
  */
 class WeakSelfClosure : DoesSomething {
-  var message = "will deinit"
+  var message = "WeakSelfClosure will deinit"
   var closure : (Void -> Void)!
 
 
@@ -110,7 +110,7 @@ class WeakSelfClosure : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("WeakSelfClosure DEALLOCATED")
   }
 }
 
@@ -118,7 +118,7 @@ class WeakSelfClosure : DoesSomething {
  * Nested function captures self but isn't assigned to self so no retain loop.
  */
 class NoAssignementNestedFunction : DoesSomething {
-  var message = "nested function"
+  var message = "NoAssignementNestedFunction nested function"
 
   let mappable = [1]
 
@@ -131,7 +131,7 @@ class NoAssignementNestedFunction : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("NoAssignementNestedFunction DEALLOCATED")
   }
 }
 
@@ -139,7 +139,7 @@ class NoAssignementNestedFunction : DoesSomething {
  * Closure captures self but isn't assigned to self so no retain loop.
  */
 class SafeInlineClosure : DoesSomething {
-  var message = "inline closure"
+  var message = "SafeInlineClosure inline closure"
 
   let mappable = [1]
 
@@ -150,7 +150,7 @@ class SafeInlineClosure : DoesSomething {
   }
 
   deinit {
-    print("DEALLOCATED")
+    print("SafeInlineClosure DEALLOCATED")
   }
 }
 
